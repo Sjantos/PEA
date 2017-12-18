@@ -39,6 +39,22 @@ namespace Dynamic
             }
         }
 
+        public Matrix(TspLibNet.TspLib95Item item)
+        {
+            dimension = item.Problem.NodeProvider.CountNodes();
+            matrix = new int[dimension, dimension];
+            var nodes = item.Problem.NodeProvider.GetNodes();
+            foreach (var i in nodes)
+            {
+                foreach (var j in nodes)
+                {
+                    if (i.Id-1 == j.Id-1) matrix[i.Id-1, j.Id-1] = Int32.MaxValue;
+                    else matrix[i.Id-1, j.Id-1] = (Int32)item.Problem.EdgeWeightsProvider.GetWeight(i, j);
+                }
+            }
+            this.matrixFilled = true;
+        }
+
         /// <summary>
         /// Copy values from one Matrix object to another
         /// </summary>

@@ -16,7 +16,13 @@ namespace Dynamic
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            FolderBrowserDialog folder = new FolderBrowserDialog();
+            folder.Description = "Wybierz folder TSPLIB95 \n" + 
+                                    "https://github.com/pdrozdowski/TSPLib.Net \n" + 
+                                    "UWAGA aplikacja uruchomi się zminimalizowana";
+            folder.ShowDialog();
+            string path = folder.SelectedPath;
+            Application.Run(new Form1(path));
         }
     }
 }

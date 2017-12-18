@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
+using TspLibNet;
+using System.Text.RegularExpressions;
 
 namespace Dynamic
 {
@@ -17,9 +19,12 @@ namespace Dynamic
     {
         private readonly SynchronizationContext synchronizationContext;
         private DateTime dt = DateTime.Now;
+        private TspLib95 library;
+        bool libraryLoaded;
+        
 
         Matrix matrixGraph;
-        public Form1()
+        public Form1(string path)
         {
             InitializeComponent();
             matrixGraph = new Matrix();
@@ -27,6 +32,35 @@ namespace Dynamic
             synchronizationContext = SynchronizationContext.Current;
             buttonDynamic.Enabled = false;
             buttonShowMatrix.Enabled = false;
+            buttonTabuSearch.Enabled = false;
+            libraryLoaded = false;
+            try
+            {
+                library = new TspLib95(path);
+                LinkedList<TspLib95Item> allTSPandATSPLibrary = new LinkedList<TspLib95Item>();
+                var tspLibrary = library.LoadAllTSP();
+                foreach (var item in tspLibrary)
+                    allTSPandATSPLibrary.AddFirst(item);
+                var atspLibrary = library.LoadAllATSP();
+                foreach (var item in atspLibrary)
+                    allTSPandATSPLibrary.AddFirst(item);
+
+                foreach (var item in allTSPandATSPLibrary)
+                {
+                    if (item.Problem.Type == ProblemType.ATSP)
+                        listView1.Items.Add(new ListViewItem("ATSP " + item.Problem.Name));
+                    else
+                        listView1.Items.Add(new ListViewItem("TSP " + item.Problem.Name));
+                }
+                libraryLoaded = true;
+            }
+            catch (Exception)
+            {
+                AppendTextBox("Failed to load TSPLIB95 directory\n");
+            }
+            if (libraryLoaded) buttonLoadFromList.Enabled = true;
+            else buttonLoadFromList.Enabled = false;
+            //AppendTextBox(Environment.CurrentDirectory);
         }
 
         /// <summary>
@@ -74,6 +108,7 @@ namespace Dynamic
                     richTextBoxStatus.AppendText(ex.ToString() + "\n");
                 }
             }
+
             //If matrix is loaded, enable option to show it
             if (matrixGraph.IsFilled())
             {
@@ -81,6 +116,8 @@ namespace Dynamic
                     buttonShowMatrix.Enabled = true;
                 if (buttonDynamic.Enabled == false)
                     buttonDynamic.Enabled = true;
+                if (buttonTabuSearch.Enabled == false)
+                    buttonTabuSearch.Enabled = true;
             }
         }
 
@@ -214,6 +251,179 @@ namespace Dynamic
             foreach (var button in buttons)
                 button.Enabled = true;
         }
+
+        /// <summary>
+        /// Runs algorithm, show result in textbox, will be used in async execution in buttonTabuSearch_Click
+        /// </summary>
+        private void buttonTabuSearchFunctionality()
+        {
+            try
+            {
+                int readyToTest = 0, totalTime = 0, tabuTime = 0;
+                //Testing if values are valid
+                int numValue;
+                bool parsed = Int32.TryParse(textBoxTabuTime.Text, out numValue);
+                if (!parsed)
+                    Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxTabuTime.Text);
+                else
+                {
+                    tabuTime = numValue;
+                    readyToTest++;
+                }
+                parsed = Int32.TryParse(textBoxTotalTime.Text, out numValue);
+                if (!parsed)
+                    Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxTotalTime.Text);
+                else
+                {
+                    totalTime = numValue;
+                    readyToTest++;
+                }
+                //if readyToTest == 2 then both values are valid
+                if (readyToTest == 2)
+                {
+                    //New instance of algorithm
+                    TabuSearch ts = new TabuSearch(matrixGraph, tabuTime, totalTime);
+
+                    string result = ts.RunAlgorithm();
+                    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
+                    AppendTextBox($"Calculated cost: {result}\n");
+                }
+                else
+                    richTextBoxStatus.AppendText("Not valid values in test repeats or test dimension\n");
+
+                
+            }
+            catch (OutOfMemoryException)
+            {
+                AppendTextBox("Too big instance, algorithm needed too much space\n");
+            }
+        }
+
+        private async void buttonTabuSearch_Click(object sender, EventArgs e)
+        {
+            //Deactivate all buttons
+                Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest, buttonTabuSearch, buttonLoadFromList, buttonTabuTest };
+            foreach (var button in buttons)
+                button.Enabled = false;
+
+            //Run algorithm
+            await Task.Run(delegate () { buttonTabuSearchFunctionality(); });
+
+            //Activate all buttons
+            foreach (var button in buttons)
+                button.Enabled = true;
+        }
+
+        private void buttonTabuTestFunctionality()
+        {
+            LinkedList<TspLib95Item> items = new LinkedList<TspLib95Item>();
+            items.AddFirst(library.GetItemByName("br17", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("burma14", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("ulysses16.tsp", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("ulysses22.tsp", ProblemType.TSP));
+
+            items.AddFirst(library.GetItemByName("gr17", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr21", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr24", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr48", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr96", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr120", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr137", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr202", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr229", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr431", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gr666", ProblemType.TSP));
+            foreach (var item in items)
+            {
+                AppendTextBox($"Loaded: {item.Problem.Name}   Best known: {item.OptimalTourDistance}\n");
+                Matrix m = new Matrix(item);
+                for (int j = 5; j <= 10; j += 5)
+                {
+                    double r = Double.MaxValue;
+                    int totalTime = 30, tabuTime = j;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        TabuSearch ts = new TabuSearch(m, tabuTime, totalTime);
+
+                        string result = ts.RunAlgorithm();
+
+                        //Parse number in string to int
+                        result = Regex.Match(result, @"\d+").Value;
+                        int numValue;
+                        bool parsed = Int32.TryParse(result, out numValue);
+                        if (!parsed)
+                        {
+                            Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", result);
+                        }
+                        else
+                        {
+                            double rr = Double.Parse(result);
+                            if (rr < r) r = rr;
+                        }
+
+                        
+                    }
+                    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
+                    AppendTextBox($"Calculated cost: {r}    {r / item.OptimalTourDistance}\n\n");
+                }
+            }
+
+            //for (int j = 5; j <= 10; j += 5)
+            //{
+            //    int totalTime = 300, tabuTime = j;
+            //    TabuSearch ts = new TabuSearch(matrixGraph, tabuTime, totalTime);
+
+            //    string result = ts.RunAlgorithm();
+            //    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
+            //    AppendTextBox($"Calculated cost: {result}\n");
+            //}
+        }
+
+        private async void buttonTabuTest_Click(object sender, EventArgs e)
+        {
+            //Deactivate all buttons
+            Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest, buttonTabuSearch, buttonLoadFromList, buttonTabuTest };
+            foreach (var button in buttons)
+                button.Enabled = false;
+
+            //Run algorithm
+            await Task.Run(delegate () { buttonTabuTestFunctionality(); });
+
+            //Activate all buttons
+            foreach (var button in buttons)
+                button.Enabled = true;
+        }
+
+        private void buttonLoadFromList_Click(object sender, EventArgs e)
+        {
+            string problemName = listView1.SelectedItems[0].Text;
+            if (problemName.Contains("ATSP"))
+            {
+                problemName = problemName.Remove(0, 5);
+                AppendTextBox($"Loaded: {problemName}   Best known: {library.GetItemByName(problemName, ProblemType.ATSP).OptimalTourDistance}\n");
+                matrixGraph = new Matrix(library.GetItemByName(problemName, ProblemType.ATSP));
+            }
+            else
+            {
+                problemName = problemName.Remove(0, 4);
+                AppendTextBox($"Loaded: {problemName}   Best known: {library.GetItemByName(problemName, ProblemType.TSP).OptimalTourDistance}\n");
+                matrixGraph = new Matrix(library.GetItemByName(problemName, ProblemType.TSP));
+            }
+
+            //If matrix is loaded, enable option to show it
+            if (matrixGraph.IsFilled())
+            {
+                if (buttonShowMatrix.Enabled == false)
+                    buttonShowMatrix.Enabled = true;
+                if (buttonDynamic.Enabled == false)
+                    buttonDynamic.Enabled = true;
+                if (buttonTabuSearch.Enabled == false)
+                    buttonTabuSearch.Enabled = true;
+            }
+        }
+
+
+
 
 
 
