@@ -44,7 +44,7 @@
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBoxTotalTime = new System.Windows.Forms.TextBox();
+            this.textBoxTotalIterations = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.label4 = new System.Windows.Forms.Label();
             this.textBoxTabuTime = new System.Windows.Forms.TextBox();
@@ -240,7 +240,7 @@
             this.tableLayoutPanel4.ColumnCount = 1;
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel4.Controls.Add(this.label3, 0, 0);
-            this.tableLayoutPanel4.Controls.Add(this.textBoxTotalTime, 0, 1);
+            this.tableLayoutPanel4.Controls.Add(this.textBoxTotalIterations, 0, 1);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 3);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
@@ -258,15 +258,15 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(131, 27);
             this.label3.TabIndex = 0;
-            this.label3.Text = "Tabu algorithm total time";
+            this.label3.Text = "Number of iterations";
             // 
-            // textBoxTotalTime
+            // textBoxTotalIterations
             // 
-            this.textBoxTotalTime.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBoxTotalTime.Location = new System.Drawing.Point(3, 30);
-            this.textBoxTotalTime.Name = "textBoxTotalTime";
-            this.textBoxTotalTime.Size = new System.Drawing.Size(131, 20);
-            this.textBoxTotalTime.TabIndex = 1;
+            this.textBoxTotalIterations.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBoxTotalIterations.Location = new System.Drawing.Point(3, 30);
+            this.textBoxTotalIterations.Name = "textBoxTotalIterations";
+            this.textBoxTotalIterations.Size = new System.Drawing.Size(131, 20);
+            this.textBoxTotalIterations.TabIndex = 1;
             // 
             // tableLayoutPanel5
             // 
@@ -316,7 +316,7 @@
             // 
             this.buttonTabuTest.Location = new System.Drawing.Point(3, 308);
             this.buttonTabuTest.Name = "buttonTabuTest";
-            this.buttonTabuTest.Size = new System.Drawing.Size(120, 55);
+            this.buttonTabuTest.Size = new System.Drawing.Size(137, 55);
             this.buttonTabuTest.TabIndex = 4;
             this.buttonTabuTest.Text = "Tabu test";
             this.buttonTabuTest.UseVisualStyleBackColor = true;
@@ -371,7 +371,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox textBoxTotalTime;
+        private System.Windows.Forms.TextBox textBoxTotalIterations;
         private System.Windows.Forms.TextBox textBoxTabuTime;
         private System.Windows.Forms.Button buttonTabuSearch;
         private System.Windows.Forms.Button buttonTabuTest;

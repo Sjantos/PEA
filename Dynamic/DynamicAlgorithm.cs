@@ -50,24 +50,24 @@ namespace Dynamic
         /// Runs dynamic algorithm, starts from city 0
         /// </summary>
         /// <returns></returns>
-        public int RunAlgorithm()
+        public TSPResult<int> RunAlgorithm()
         {
-            return tsp(0, fullSet - 1);
+            return new TSPResult<int>(tsp(0, fullSet - 1), this.GetPath());
         }
 
         /// <summary>
         /// Returns path in user friendly shape
         /// </summary>
         /// <returns></returns>
-        public string GetPath()
+        public int[] GetPath()
         {
+            List<int> path = new List<int>();
             findPath(0, (1 << numberOfCities) - 2);
-            StringBuilder str = new StringBuilder();
-            str.Append(startCity + "->");
+            path.Add(startCity);
             foreach (var item in finalPath)
-                str.Append(item + "->");
-            str.Append(startCity + "\n");
-            return str.ToString();
+                path.Add(item);
+            path.Add(startCity);
+            return path.ToArray<int>();
         }
 
         /// <summary>

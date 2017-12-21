@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,10 +11,11 @@ namespace Dynamic
     class TabuSearch
     {
         int tabuTime;
-        int timeLimit;
+        int numberIfIterations;
         bool diversification;
 
-        DateTime lastImprovementTime;
+        //DateTime lastImprovementTime;
+        int lastImprovementTime;
         Matrix graph;
         TabuList tabuList;
         int[] theBestEverSolutionPath;
@@ -22,42 +24,42 @@ namespace Dynamic
         int[] bestSolutionPath;
         int bestSolutionCost;
 
-        public TabuSearch(Matrix g, int tabuDuration, int maxTime = 600, bool divers = true)
+        int improvementCounter;
+
+        public TabuSearch(Matrix g, int tabuDuration, int iterations, bool divers = true)
         {
+            improvementCounter = 0;
             diversification = divers;
-            timeLimit = maxTime;
+            numberIfIterations = iterations;
             tabuTime = tabuDuration;
             graph = new Matrix(g.Dimension);
             graph.Copy(g);
             tabuList = new TabuList(graph.Dimension, tabuTime);
         }
 
-        public string RunAlgorithm()
+        public TSPResult<int> RunAlgorithm()
         {
+            improvementCounter = 0;
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             TabuSearchAlgorithm();
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("" + theBestEverSolutionCost);
-            sb.Append("Path: ");
-            foreach (var item in theBestEverSolutionPath)
-                sb.Append(item + " ");
-            sb.Append("\n");
+            timer.Stop();
 
-            return sb.ToString();
+            return new TSPResult<int>(this.theBestEverSolutionCost, this.theBestEverSolutionPath, timer.ElapsedMilliseconds, improvementCounter);
         }
 
         private void TabuSearchAlgorithm()
         {
             DateTime algorithmStartTime = DateTime.Now;
-            int[] currentSolution = StartSolutionPath();//RandomSolutionPath();
+            int[] currentSolution = StartSolutionPath();
             theBestEverSolutionPath = new int[currentSolution.Length];
             bestSolutionPath = new int[currentSolution.Length];
             Array.Copy(currentSolution, theBestEverSolutionPath, currentSolution.Length);
             Array.Copy(currentSolution, bestSolutionPath, currentSolution.Length);
             bestSolutionCost = SolutionCost(bestSolutionPath);
             theBestEverSolutionCost = SolutionCost(theBestEverSolutionPath);
-
-            double seconds = 0;
-            while((seconds = (DateTime.Now - algorithmStartTime).TotalSeconds) < timeLimit)
+            int iterationCounter = 0;
+            while(iterationCounter < numberIfIterations)
             {
                 currentSolution = getBetterPossibleSolution(currentSolution);
                 int currentSolutionCost = SolutionCost(currentSolution);
@@ -69,13 +71,17 @@ namespace Dynamic
 
                     if(bestSolutionCost < theBestEverSolutionCost)
                     {
+                        improvementCounter++;
                         theBestEverSolutionCost = bestSolutionCost;
                         Array.Copy(bestSolutionPath, theBestEverSolutionPath, bestSolutionPath.Length);
                     }
-                    lastImprovementTime = DateTime.Now;
+                    lastImprovementTime = iterationCounter;
                 }
-                if (diversification)
+
+                if (diversification && (((double)(iterationCounter - lastImprovementTime)) / (double)numberIfIterations) > 0.25)
                     MakeDiversification();
+
+                iterationCounter++;
             }
         }
 
@@ -144,10 +150,6 @@ namespace Dynamic
 
         private int[] StartSolutionPath()
         {
-            //int[] solution = new int[graph.Dimension];
-            //for (int i = 0; i < graph.Dimension; i++)
-            //    solution[i] = i + 1;
-            //solution[graph.Dimension] = 0;
             LinkedList<int> sol = new LinkedList<int>();
             sol.AddFirst(0);
             LinkedList<int> citiesToPick = new LinkedList<int>();
@@ -193,12 +195,9 @@ namespace Dynamic
 
         private void MakeDiversification()
         {
-            if((DateTime.Now - lastImprovementTime).TotalSeconds > 30)
-            {
-                int[] randomSolution = RandomSolutionPath();
-                Array.Copy(randomSolution, bestSolutionPath, randomSolution.Length);
-                bestSolutionCost = SolutionCost(randomSolution);
-            }
+            int[] randomSolution = RandomSolutionPath();
+            Array.Copy(randomSolution, bestSolutionPath, randomSolution.Length);
+            bestSolutionCost = SolutionCost(randomSolution);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Dynamic
         public Form1(string path)
         {
             InitializeComponent();
+            this.TopMost = false;
             matrixGraph = new Matrix();
 
             synchronizationContext = SynchronizationContext.Current;
@@ -145,13 +146,19 @@ namespace Dynamic
                 Stopwatch timer = new Stopwatch();
                 //Measure time
                 timer.Start();
-                int value = dp.RunAlgorithm();
+                TSPResult<int> dpResult = dp.RunAlgorithm();
+                int value = dpResult.PathCost;
                 timer.Stop();
                 //Get optimal path
-                string str = dp.GetPath();
+                StringBuilder s = new StringBuilder();
+                int[] path = dpResult.Path;
+                foreach (int item in path)
+                    s.Append(item + " ");
+                s.Append("\n");
+                string str = s.ToString();
                 var elapsedTime = timer.ElapsedMilliseconds;
-                AppendTextBox("Calculated cost: " + value + "\n" + str);
-                AppendTextBox("Algorithm was executed in: " + elapsedTime + " ms\n\n");
+                AppendTextBox("Algorithm was executed in: " + elapsedTime + " ms\n");
+                AppendTextBox("Calculated cost: " + value + "\n" + str + "\n");
             }
             catch (OutOfMemoryException)
             {
@@ -171,6 +178,8 @@ namespace Dynamic
                 return;
             }
             richTextBoxStatus.Text += value;
+            richTextBoxStatus.SelectionStart = richTextBoxStatus.Text.Length;
+            richTextBoxStatus.ScrollToCaret();
         }
 
         /// <summary>
@@ -259,7 +268,7 @@ namespace Dynamic
         {
             try
             {
-                int readyToTest = 0, totalTime = 0, tabuTime = 0;
+                int readyToTest = 0, totalIterations = 0, tabuTime = 0;
                 //Testing if values are valid
                 int numValue;
                 bool parsed = Int32.TryParse(textBoxTabuTime.Text, out numValue);
@@ -270,23 +279,30 @@ namespace Dynamic
                     tabuTime = numValue;
                     readyToTest++;
                 }
-                parsed = Int32.TryParse(textBoxTotalTime.Text, out numValue);
+                parsed = Int32.TryParse(textBoxTotalIterations.Text, out numValue);
                 if (!parsed)
-                    Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxTotalTime.Text);
+                    Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxTotalIterations.Text);
                 else
                 {
-                    totalTime = numValue;
+                    totalIterations = numValue;
                     readyToTest++;
                 }
                 //if readyToTest == 2 then both values are valid
                 if (readyToTest == 2)
                 {
                     //New instance of algorithm
-                    TabuSearch ts = new TabuSearch(matrixGraph, tabuTime, totalTime);
+                    TabuSearch ts = new TabuSearch(matrixGraph, tabuTime, totalIterations);
 
-                    string result = ts.RunAlgorithm();
-                    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
-                    AppendTextBox($"Calculated cost: {result}\n");
+                    TSPResult<int> tsResult = ts.RunAlgorithm();
+                    int value = tsResult.PathCost;
+                    StringBuilder s = new StringBuilder();
+                    int[] path = tsResult.Path;
+                    foreach (int item in path)
+                        s.Append(item + " ");
+                    s.Append("\n");
+                    string str = s.ToString();
+                    AppendTextBox($"Number of iterations: {totalIterations}    Tabu time: {tabuTime}\n");
+                    AppendTextBox($"Calculated cost: {value}, Path: {str}\n");
                 }
                 else
                     richTextBoxStatus.AppendText("Not valid values in test repeats or test dimension\n");
@@ -317,66 +333,41 @@ namespace Dynamic
         private void buttonTabuTestFunctionality()
         {
             LinkedList<TspLib95Item> items = new LinkedList<TspLib95Item>();
-            items.AddFirst(library.GetItemByName("br17", ProblemType.ATSP));
-            items.AddFirst(library.GetItemByName("burma14", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("ulysses16.tsp", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("ulysses22.tsp", ProblemType.TSP));
-
-            items.AddFirst(library.GetItemByName("gr17", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr21", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr24", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr48", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr96", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr120", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr137", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr202", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr229", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("rbg443", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("rbg323", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("ft70", ProblemType.ATSP));
             items.AddFirst(library.GetItemByName("gr431", ProblemType.TSP));
-            items.AddFirst(library.GetItemByName("gr666", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("gil262", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("eil76", ProblemType.TSP));
+
             foreach (var item in items)
             {
                 AppendTextBox($"Loaded: {item.Problem.Name}   Best known: {item.OptimalTourDistance}\n");
                 Matrix m = new Matrix(item);
-                for (int j = 5; j <= 10; j += 5)
+                //AppendTextBox("Tabu time\n");
+                //for (int k = 0; k < 10; k++)
+                //{
+                //    int tabuTime = k * 2;
+                //    TabuSearch ts = new TabuSearch(m, tabuTime, 100);
+
+                //    TSPResult<int> tsResult = ts.RunAlgorithm();
+                //    int value = tsResult.PathCost;
+                //    AppendTextBox($"{100},{tabuTime},{Math.Round((double)value / item.OptimalTourDistance, 4)}\n");
+                //}
+
+                for (int i = 0; i < 50; i++)
                 {
-                    double r = Double.MaxValue;
-                    int totalTime = 30, tabuTime = j;
-                    for (int i = 0; i < 3; i++)
+                    for (int j = 0; j < 10; j++)
                     {
-                        TabuSearch ts = new TabuSearch(m, tabuTime, totalTime);
+                        int totalIterations = i*10, tabuTime = j * 2;
+                        TabuSearch ts = new TabuSearch(m, tabuTime, totalIterations);
 
-                        string result = ts.RunAlgorithm();
-
-                        //Parse number in string to int
-                        result = Regex.Match(result, @"\d+").Value;
-                        int numValue;
-                        bool parsed = Int32.TryParse(result, out numValue);
-                        if (!parsed)
-                        {
-                            Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", result);
-                        }
-                        else
-                        {
-                            double rr = Double.Parse(result);
-                            if (rr < r) r = rr;
-                        }
-
-                        
+                        TSPResult<int> tsResult = ts.RunAlgorithm();
+                        AppendTextBox($"{totalIterations},{tabuTime},{tsResult.PathCost},{item.OptimalTourDistance},      {tsResult.ImprovementCounter},{tsResult.Time}\n");
                     }
-                    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
-                    AppendTextBox($"Calculated cost: {r}    {r / item.OptimalTourDistance}\n\n");
                 }
+
             }
-
-            //for (int j = 5; j <= 10; j += 5)
-            //{
-            //    int totalTime = 300, tabuTime = j;
-            //    TabuSearch ts = new TabuSearch(matrixGraph, tabuTime, totalTime);
-
-            //    string result = ts.RunAlgorithm();
-            //    AppendTextBox($"Total time: {totalTime} s    Tabu time: {tabuTime}\n");
-            //    AppendTextBox($"Calculated cost: {result}\n");
-            //}
         }
 
         private async void buttonTabuTest_Click(object sender, EventArgs e)

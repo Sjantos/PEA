@@ -17,9 +17,8 @@ namespace Dynamic
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             FolderBrowserDialog folder = new FolderBrowserDialog();
-            folder.Description = "Wybierz folder TSPLIB95 \n" + 
-                                    "https://github.com/pdrozdowski/TSPLib.Net \n" + 
-                                    "UWAGA aplikacja uruchomi się zminimalizowana";
+            folder.Description = "Wybierz folder TSPLIB95 \ndo pobrania ze strony\n" +
+                                    "https://github.com/pdrozdowski/TSPLib.Net \n";
             folder.ShowDialog();
             string path = folder.SelectedPath;
             Application.Run(new Form1(path));
