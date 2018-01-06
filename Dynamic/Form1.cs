@@ -64,6 +64,7 @@ namespace Dynamic
             //AppendTextBox(Environment.CurrentDirectory);
         }
 
+        #region temporary region
         /// <summary>
         /// Run test for matrix with random values
         /// </summary>
@@ -412,7 +413,21 @@ namespace Dynamic
                     buttonTabuSearch.Enabled = true;
             }
         }
+        #endregion
 
+        private void buttonGenetic_Click(object sender, EventArgs e)
+        {
+            Individual.GraphMatrix = matrixGraph;
+            Individual.NumberOfCities = matrixGraph.Dimension;
+            Individual i1 = new Individual(new int[10] { 8, 4, 7, 3, 6, 2, 5, 1, 9, 0 });
+            Individual i2 = new Individual(new int[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+            Individual child = new Individual(i1, i2);
+            for (int i = 0; i < 10; i++)
+            {
+                AppendTextBox(child[i] + " ");
+            }
+        }
+        
 
 
 
