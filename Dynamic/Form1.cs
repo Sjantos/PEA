@@ -21,12 +21,15 @@ namespace Dynamic
         private DateTime dt = DateTime.Now;
         private TspLib95 library;
         bool libraryLoaded;
-        
+        Button[] buttons;
+
+
 
         Matrix matrixGraph;
         public Form1(string path)
         {
             InitializeComponent();
+            buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest, buttonTabuSearch, buttonLoadFromList, buttonTabuTest, buttonGeneticTest, buttonGeneticAlgorithm, buttonClear };
             this.TopMost = false;
             matrixGraph = new Matrix();
 
@@ -120,6 +123,8 @@ namespace Dynamic
                     buttonDynamic.Enabled = true;
                 if (buttonTabuSearch.Enabled == false)
                     buttonTabuSearch.Enabled = true;
+                Individual.GraphMatrix = matrixGraph;
+                Individual.NumberOfCities = matrixGraph.Dimension;
             }
         }
 
@@ -191,7 +196,6 @@ namespace Dynamic
         private async void buttonDynamic_Click(object sender, EventArgs e)
         {
             //Deactivate all buttons
-            Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest };
             foreach (var button in buttons)
                 button.Enabled = false;
 
@@ -252,7 +256,6 @@ namespace Dynamic
         /// <param name="e"></param>
         private async void buttonTest_Click(object sender, EventArgs e)
         {
-            Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest };
             foreach (var button in buttons)
                 button.Enabled = false;
 
@@ -319,7 +322,6 @@ namespace Dynamic
         private async void buttonTabuSearch_Click(object sender, EventArgs e)
         {
             //Deactivate all buttons
-                Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest, buttonTabuSearch, buttonLoadFromList, buttonTabuTest };
             foreach (var button in buttons)
                 button.Enabled = false;
 
@@ -374,7 +376,6 @@ namespace Dynamic
         private async void buttonTabuTest_Click(object sender, EventArgs e)
         {
             //Deactivate all buttons
-            Button[] buttons = new Button[] { buttonDynamic, buttonLoadFile, buttonShowMatrix, buttonTest, buttonTabuSearch, buttonLoadFromList, buttonTabuTest };
             foreach (var button in buttons)
                 button.Enabled = false;
 
@@ -411,23 +412,133 @@ namespace Dynamic
                     buttonDynamic.Enabled = true;
                 if (buttonTabuSearch.Enabled == false)
                     buttonTabuSearch.Enabled = true;
+                Individual.GraphMatrix = matrixGraph;
+                Individual.NumberOfCities = matrixGraph.Dimension;
             }
         }
         #endregion
 
-        private void buttonGenetic_Click(object sender, EventArgs e)
+        private void buttonGeneticTestFunctionality()
         {
-            Individual.GraphMatrix = matrixGraph;
-            Individual.NumberOfCities = matrixGraph.Dimension;
-            Individual i1 = new Individual(new int[10] { 8, 4, 7, 3, 6, 2, 5, 1, 9, 0 });
-            Individual i2 = new Individual(new int[10] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-            Individual child = new Individual(i1, i2);
-            for (int i = 0; i < 10; i++)
+            LinkedList<TspLib95Item> items = new LinkedList<TspLib95Item>();
+            items.AddFirst(library.GetItemByName("rbg443", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("rbg323", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("ft70", ProblemType.ATSP));
+            items.AddFirst(library.GetItemByName("gr431", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("lin318", ProblemType.TSP));
+            items.AddFirst(library.GetItemByName("eil76", ProblemType.TSP));
+
+            foreach (var item in items)
             {
-                AppendTextBox(child[i] + " ");
+                AppendTextBox($"Loaded: {item.Problem.Name}   Best known: {item.OptimalTourDistance}\n");
+                Matrix m = new Matrix(item);
+                Individual.GraphMatrix = m;
+                Individual.NumberOfCities = m.Dimension;
+                for (double i = 0.5; i < 4.0; i += 0.5)
+                {
+                    for (double j = 0.5; j < 4.0; j += 0.5)
+                    {
+                        for (double mut = 0.1; mut < 0.4; mut += 0.1)
+                        {
+                            for (int k = 2; k < 4; k++)
+                            {
+                                int population = (int)(i * item.Problem.NodeProvider.CountNodes());
+                                int generations = (int)(j * item.Problem.NodeProvider.CountNodes());
+                                GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, mut, k);
+                                TSPResult<int> result = ga.RunAlgorithm();
+
+                                AppendTextBox(population + "," + generations + "," + mut + "," + k + ",      ");
+                                AppendTextBox(result.ToStringInTests());
+                            }
+                            
+                        }
+                        
+                    }
+                }
+
             }
         }
-        
+
+        private async void buttonGeneticTest_Click(object sender, EventArgs e)
+        {
+            //Deactivate all buttons
+            foreach (var button in buttons)
+                button.Enabled = false;
+
+            //Run algorithm
+            await Task.Run(delegate () { buttonGeneticTestFunctionality(); });
+
+            //Activate all buttons
+            foreach (var button in buttons)
+                button.Enabled = true;
+        }
+
+        /// <summary>
+        /// Runs algorithm, show result in textbox, will be used in async execution in buttonDynamic_Click
+        /// </summary>
+        private void buttonGeneticAlgorithmFunctionality()
+        {
+            int readyToTest = 0, generations = 0, population = 0;
+            double mutation = 0.0;
+            //Testing if values are valid
+            int numValue;
+            double doubValue;
+            bool parsed = Int32.TryParse(textBoxPopulationSize.Text, out numValue);
+            if (!parsed)
+                Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxPopulationSize.Text);
+            else
+            {
+                population = numValue;
+                readyToTest++;
+            }
+            parsed = Int32.TryParse(textBoxNumberOfGenerations.Text, out numValue);
+            if (!parsed)
+                Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxNumberOfGenerations.Text);
+            else
+            {
+                generations = numValue;
+                readyToTest++;
+            }
+            parsed = Double.TryParse(textBoxMutationChance.Text, out doubValue);
+            if (!parsed)
+                Console.WriteLine("Int32.TryParse could not parse '{0}' to an int.\n", textBoxMutationChance.Text);
+            else
+            {
+                mutation = doubValue;
+                readyToTest++;
+            }
+            //if readyToTest == 3 then all values are valid
+            if (readyToTest == 3)
+            {
+                //New instance of algorithm
+                GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, mutation, 4);
+                TSPResult<int> result = ga.RunAlgorithm();
+
+                AppendTextBox(result.ToString());
+            }
+            else
+                richTextBoxStatus.AppendText("Not valid values in algorithm parameters\n");
+        }
+
+        private async void buttonGeneticAlgorithm_Click(object sender, EventArgs e)
+        {
+            //Deactivate all buttons
+            foreach (var button in buttons)
+                button.Enabled = false;
+
+            //Run algorithm
+            await Task.Run(delegate () { buttonGeneticAlgorithmFunctionality(); });
+
+            //Activate all buttons
+            foreach (var button in buttons)
+                button.Enabled = true;
+        }
+
+        private void buttonClear_Click(object sender, EventArgs e)
+        {
+            richTextBoxStatus.Text = "";
+        }
+
 
 
 

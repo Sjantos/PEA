@@ -20,5 +20,23 @@ namespace Dynamic
             this.Time = t;
             this.ImprovementCounter = impr;
         }
+
+        public String ToString()
+        {
+            StringBuilder str = new StringBuilder();
+            str.AppendLine("Best path cost: " + PathCost);
+            str.AppendLine("Calculated in: " + Time + "ms");
+            str.Append("Path: ");
+            foreach (var item in Path)
+                str.Append(item + " ");
+            str.AppendLine();
+
+            return str.ToString();
+        }
+
+        public String ToStringInTests()
+        {
+            return PathCost + "," + Time + "\n";
+        }
     }
 }
