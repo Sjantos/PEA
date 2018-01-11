@@ -114,8 +114,8 @@ namespace Dynamic
                     p2Index = rand.Next() % parents.Length;
                 } while (p1Index == p2Index);
                 Individual p1 = parents[p1Index], p2 = parents[p2Index];
-                children[i] = new Individual(p1, p2, CrossoverMethod.OX);
-                children[i + 1] = new Individual(p2, p1, CrossoverMethod.OX);
+                children[i] = new Individual(p1, p2, CrossoverMethod.PMX);
+                children[i + 1] = new Individual(p2, p1, CrossoverMethod.PMX);
             }
         }
 

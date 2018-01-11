@@ -24,6 +24,7 @@ namespace Dynamic
     /// </summary>
     class Individual
     {
+        static Random rand;
         static Matrix graphMatrix;
         static int numberOfCities;
         int[] solution;
@@ -35,6 +36,11 @@ namespace Dynamic
         public int this[int i] { get { return solution[i]; } set { solution[i] = value; } }
 
         public int[] Solution { get { return solution; } }
+
+        static Individual()
+        {
+            rand = new Random(DateTime.Now.Millisecond);
+        }
 
         /// <summary>
         /// Creates ne Individual with random cities permutation
@@ -107,7 +113,7 @@ namespace Dynamic
         /// <param name="father">parent 2</param>
         private void PMXIndividual(Individual mother, Individual father)
         {
-            Random rand = new Random(DateTime.Now.Millisecond);
+            //Random rand = new Random(DateTime.Now.Millisecond);
             solution = new int[numberOfCities];
             for (int i = 0; i < solution.Length; i++)
                 solution[i] = -1;
@@ -159,7 +165,7 @@ namespace Dynamic
         /// <param name="father">parent 2</param>
         private void OXIndividual(Individual mother, Individual father)
         {
-            Random rand = new Random(DateTime.Now.Millisecond);
+            //Random rand = new Random(DateTime.Now.Millisecond);
             solution = new int[numberOfCities];
             for (int i = 0; i < solution.Length; i++)
                 solution[i] = -1;
@@ -204,7 +210,7 @@ namespace Dynamic
         /// </summary>
         private void SwapMutation()
         {
-            Random rand = new Random(DateTime.Now.Millisecond);
+            //Random rand = new Random(DateTime.Now.Millisecond);
             int city1Index = rand.Next() % solution.Length;
             int city2Index = rand.Next() % solution.Length;
             int tmp = solution[city1Index];
@@ -217,7 +223,7 @@ namespace Dynamic
         /// </summary>
         private void ScrambleMutation()
         {
-            Random rand = new Random(DateTime.Now.Millisecond);
+            //Random rand = new Random(DateTime.Now.Millisecond);
             int city1Index = rand.Next() % solution.Length;
             int city2Index = rand.Next() % solution.Length;
             if(city1Index > city2Index)
@@ -238,7 +244,7 @@ namespace Dynamic
         /// </summary>
         private void InversionMutation()
         {
-            Random rand = new Random(DateTime.Now.Millisecond);
+            //Random rand = new Random(DateTime.Now.Millisecond);
             int city1Index = rand.Next() % solution.Length;
             int city2Index = rand.Next() % solution.Length;
             if (city1Index > city2Index)

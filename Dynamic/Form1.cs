@@ -434,25 +434,24 @@ namespace Dynamic
                 Matrix m = new Matrix(item);
                 Individual.GraphMatrix = m;
                 Individual.NumberOfCities = m.Dimension;
-                for (double i = 0.5; i < 4.0; i += 0.5)
+                //Best results for mutation = 0.3 and tournament size = 3
+                //double[] itable = new double[] { 2.0, 3.0, 4.0};
+                for (int i = 1; i < 6; i++)
                 {
-                    for (double j = 0.5; j < 4.0; j += 0.5)
+                    for (int j = 1; j < 6; j++)
                     {
-                        for (double mut = 0.1; mut < 0.4; mut += 0.1)
+                        long result = 0, time = 0;
+                        int population = (int)(i * 100);
+                        int generations = (int)(j * 1000);
+                        for (int k = 0; k < 1; k++)
                         {
-                            for (int k = 2; k < 4; k++)
-                            {
-                                int population = (int)(i * item.Problem.NodeProvider.CountNodes());
-                                int generations = (int)(j * item.Problem.NodeProvider.CountNodes());
-                                GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, mut, k);
-                                TSPResult<int> result = ga.RunAlgorithm();
-
-                                AppendTextBox(population + "," + generations + "," + mut + "," + k + ",      ");
-                                AppendTextBox(result.ToStringInTests());
-                            }
-                            
+                            GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, 0.3, 3);
+                            TSPResult<int> r = ga.RunAlgorithm();
+                            result += r.PathCost;
+                            time += r.Time;
                         }
-                        
+
+                        AppendTextBox(population + "," + generations + ",         " + (double)(result / 1) + "," + (double)(time / 1) + "\n");
                     }
                 }
 
@@ -511,7 +510,7 @@ namespace Dynamic
             if (readyToTest == 3)
             {
                 //New instance of algorithm
-                GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, mutation, 4);
+                GeneticAlgorithm ga = new GeneticAlgorithm(matrixGraph, population, generations, mutation, 3);
                 TSPResult<int> result = ga.RunAlgorithm();
 
                 AppendTextBox(result.ToString());
