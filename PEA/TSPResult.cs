@@ -4,8 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dynamic
+namespace PEA
 {
+    /// <summary>
+    /// Helper with TSP result returned from algorithms, generic, but used only in int values
+    /// Basic values are cost, path and time, but there is also a variable used in tabu search tests
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class TSPResult<T>
     {
         public T PathCost;
@@ -34,6 +39,10 @@ namespace Dynamic
             return str.ToString();
         }
 
+        /// <summary>
+        /// Use this in tests, give results in CSV format
+        /// </summary>
+        /// <returns></returns>
         public String ToStringInTests()
         {
             return PathCost + "," + Time + "\n";

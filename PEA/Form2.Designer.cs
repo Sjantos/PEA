@@ -1,4 +1,4 @@
-﻿namespace Dynamic
+﻿namespace PEA
 {
     partial class MatrixView
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace Dynamic
+namespace PEA
 {
     class TabuSearch
     {
@@ -14,7 +14,6 @@ namespace Dynamic
         int numberIfIterations;
         bool diversification;
 
-        //DateTime lastImprovementTime;
         int lastImprovementTime;
         Matrix graph;
         TabuList tabuList;
@@ -201,40 +200,3 @@ namespace Dynamic
         }
     }
 }
-
-//Other method for getBetterPossibleSolution
-//int numberOfCitiesInNeighbourhood = (int)(graph.Dimension * 0.1);
-//int lefti = i, righti = i, k = 0;
-//LinkedList<int> neighbours = new LinkedList<int>();
-//while (k < numberOfCitiesInNeighbourhood)
-//{
-//    if ((lefti > 0) && (k < numberOfCitiesInNeighbourhood))
-//    {
-//        neighbours.AddFirst(currentBestSolution[--lefti]);
-//        k++;
-//    }
-//    if ((righti < currentBestSolution.Length - 2) && (k < numberOfCitiesInNeighbourhood))
-//    {
-//        neighbours.AddLast(currentBestSolution[++righti]);
-//        k++;
-//    }
-//}
-//foreach (int j in neighbours)
-//{
-//    int[] currentNewSolution = new int[currentBestSolution.Length];
-//    Array.Copy(currentBestSolution, currentNewSolution, currentBestSolution.Length);
-//    currentNewSolution = swapCities(i, j, currentNewSolution);
-//    int currentNewCost = SolutionCost(currentNewSolution);
-
-//    bool currentNewBetterOrFirstSolution = (currentBestCost > currentNewCost) || firstNeighbour;
-//    //znaleziono lepsze rozwiazanie AND mozliwy swap OR lepsze niz globalne rozwiazanie(aspiracja)
-//    if ((currentNewBetterOrFirstSolution && tabuList.SwapPossible(i, j)) || (currentNewCost < bestSolutionCost))
-//    {
-//        firstNeighbour = false;
-//        city1 = i;
-//        city2 = j;
-
-//        Array.Copy(currentNewSolution, currentBestSolution/*bestSolutionPath*/, currentNewSolution.Length);
-//        bestSolutionCost = currentNewCost;
-//    }
-//}

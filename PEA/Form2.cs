@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Dynamic
+namespace PEA
 {
     public partial class MatrixView : Form
     {

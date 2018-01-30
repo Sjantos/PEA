@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 using TspLibNet;
-using System.Text.RegularExpressions;
 
-namespace Dynamic
+namespace PEA
 {
     public partial class Form1 : Form
     {
@@ -64,10 +59,9 @@ namespace Dynamic
             }
             if (libraryLoaded) buttonLoadFromList.Enabled = true;
             else buttonLoadFromList.Enabled = false;
-            //AppendTextBox(Environment.CurrentDirectory);
         }
 
-        #region temporary region
+        #region Dynamic algorithm
         /// <summary>
         /// Run test for matrix with random values
         /// </summary>
@@ -264,7 +258,9 @@ namespace Dynamic
             foreach (var button in buttons)
                 button.Enabled = true;
         }
+        #endregion
 
+        #region Tabu search
         /// <summary>
         /// Runs algorithm, show result in textbox, will be used in async execution in buttonTabuSearch_Click
         /// </summary>
@@ -347,16 +343,6 @@ namespace Dynamic
             {
                 AppendTextBox($"Loaded: {item.Problem.Name}   Best known: {item.OptimalTourDistance}\n");
                 Matrix m = new Matrix(item);
-                //AppendTextBox("Tabu time\n");
-                //for (int k = 0; k < 10; k++)
-                //{
-                //    int tabuTime = k * 2;
-                //    TabuSearch ts = new TabuSearch(m, tabuTime, 100);
-
-                //    TSPResult<int> tsResult = ts.RunAlgorithm();
-                //    int value = tsResult.PathCost;
-                //    AppendTextBox($"{100},{tabuTime},{Math.Round((double)value / item.OptimalTourDistance, 4)}\n");
-                //}
 
                 for (int i = 0; i < 50; i++)
                 {
@@ -386,6 +372,7 @@ namespace Dynamic
             foreach (var button in buttons)
                 button.Enabled = true;
         }
+        #endregion
 
         private void buttonLoadFromList_Click(object sender, EventArgs e)
         {
@@ -416,8 +403,8 @@ namespace Dynamic
                 Individual.NumberOfCities = matrixGraph.Dimension;
             }
         }
-        #endregion
 
+        #region Genetic algorithm
         private void buttonGeneticTestFunctionality()
         {
             LinkedList<TspLib95Item> items = new LinkedList<TspLib95Item>();
@@ -435,7 +422,6 @@ namespace Dynamic
                 Individual.GraphMatrix = m;
                 Individual.NumberOfCities = m.Dimension;
                 //Best results for mutation = 0.3 and tournament size = 3
-                //double[] itable = new double[] { 2.0, 3.0, 4.0};
                 for (int i = 1; i < 6; i++)
                 {
                     for (int j = 1; j < 6; j++)
@@ -532,6 +518,7 @@ namespace Dynamic
             foreach (var button in buttons)
                 button.Enabled = true;
         }
+        #endregion
 
         private void buttonClear_Click(object sender, EventArgs e)
         {
